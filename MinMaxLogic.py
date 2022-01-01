@@ -121,6 +121,6 @@ class MinMaxAI:
                         bestMove = (i, j)
                         bestVal = moveVal
 
-        print(f"The value of the best Move for {self.player} is :", bestMove)
+        print(f"The value of the best Move for {self.player} is : {bestMove}")
         print()
         return bestMove
