@@ -6,7 +6,7 @@ class TicTacToe:
         self.tic_board = [[" ", " ", " "],
                           [" ", " ", " "],
                           [" ", " ", " "]]
-        self.turn = 1
+        self.turn = True
 
     def play(self, x: int, y: int) -> list:
         """ 
@@ -29,7 +29,7 @@ class TicTacToe:
         else:
             self.tic_board[x][y] = "O"
         self.turn = not self.turn
-        return self.tic_board
+        return self.__str__()
 
     def isMovesLeft(self) -> bool:
         """

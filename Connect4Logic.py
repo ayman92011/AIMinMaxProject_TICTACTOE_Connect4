@@ -9,7 +9,7 @@ class Connect4:
                               [" ", " ", " ", " ", " ", " ", " "],
                               [" ", " ", " ", " ", " ", " ", " "],
                               [" ", " ", " ", " ", " ", " ", " "]]
-        self.turn = 1
+        self.turn = True
 
     def play(self, x: int, y: int) -> list:
         """ 
