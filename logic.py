@@ -4,11 +4,10 @@ from MinMaxLogic import MinMaxAI
 
 if __name__ == "__main__":
     game = TicTacToe()
-    ai_x = MinMaxAI("X", game)
     ai_o = MinMaxAI("O", game)
     while game.win() == "":
-
-        x, y = ai_x.findBestMove()
+        x = int(input("Enter x: "))
+        y = int(input("Enter y: "))
         game.play(x, y)
         print(game)
         if game.win() == "":

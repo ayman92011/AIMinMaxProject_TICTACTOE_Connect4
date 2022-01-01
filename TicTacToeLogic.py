@@ -3,7 +3,9 @@ class TicTacToe:
         """
             Create TicTacToe Game logic
         """
-        self.tic_board = [[" ", " ", " "], [" ", " ", " "], [" ", " ", " "]]
+        self.tic_board = [[" ", " ", " "],
+                          [" ", " ", " "],
+                          [" ", " ", " "]]
         self.turn = 1
 
     def play(self, x: int, y: int) -> list:

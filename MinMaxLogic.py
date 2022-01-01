@@ -11,11 +11,11 @@ class MinMaxAI:
         if self.player == "X":
             self.wanttowin = "Player 1 wins"
             self.opponent = "O"
-            self.isMax = False
+            self.isMax = True
         else:
             self.wanttowin = "Player 2 wins"
             self.opponent = "X"
-            self.isMax = True
+            self.isMax = False
 
     def isMovesLeft(self):
         return self.game.isMovesLeft()
