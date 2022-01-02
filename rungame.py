@@ -19,7 +19,7 @@ class Run_Game:
         if self.start:
             self.start = False
             return self.game.play(self.ai_x.findBestMove())
-        if x:
+        if x is not None:
             return self.game.play(x, y)
 
         if self.game.turn:

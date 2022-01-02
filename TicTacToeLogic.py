@@ -23,13 +23,13 @@ class TicTacToe:
             list: playing board
         """
         if self.tic_board[x][y] != " ":
-            raise Exception("enter valued place")
+            return self.tic_board
         if self.turn:
             self.tic_board[x][y] = "X"
         else:
             self.tic_board[x][y] = "O"
         self.turn = not self.turn
-        return self.__str__()
+        return self.tic_board
 
     def isMovesLeft(self) -> bool:
         """
