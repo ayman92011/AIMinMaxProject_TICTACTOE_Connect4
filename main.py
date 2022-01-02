@@ -36,7 +36,6 @@ if __name__ == "__main__":
                 x = index % 3
                 print(x, y)
                 game.run(x, y)
-                #         # game.run()
 
         pygame.display.flip()
 
