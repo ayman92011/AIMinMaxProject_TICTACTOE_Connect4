@@ -1,6 +1,8 @@
 import pygame
-from typing import List
+from typing import List, Tuple
 from operator import add
+from pygame.event import Event
+from rungame import Run_Game
 
 
 class DrawGameTic:
@@ -95,6 +97,105 @@ class DrawGameTic:
                     img, tuple(map(add, self.rectlist[i + j * 3].topleft, (25, -25))))
 
 
-class Settings:
+class Button:
+    def __init__(self, screen: pygame.Surface,
+                 text: str,
+                 pos: Tuple[int],
+                 font_size: int,
+                 bgcolor: str = "black",
+                 textcolor: str = "White") -> None:
+        self.x, self.y = pos
+        self.font = pygame.font.SysFont("Arial", font_size)
+
+        # Create a screen object if one is not passed
+        if screen:
+            self.screen: pygame.Surface = screen
+        else:
+            self.screen: pygame.Surface = pygame.display.set_mode([600, 600])
+
+        self.text = self.font.render(text, 1, pygame.Color(textcolor))
+        self.size = self.text.get_size()
+        self.surface = pygame.Surface(self.size)
+        self.surface.fill(bgcolor)
+        self.surface.blit(self.text, (0, 0))
+        self.rect = pygame.Rect(self.x, self.y, self.size[0], self.size[1])
+
+    def change_text(self, text: str,
+                    bgcolor: str = "black",
+                    textcolor: str = "White") -> None:
+        self.text = self.font.render(text, 1, pygame.Color(textcolor))
+        self.size = self.text.get_size()
+        self.surface = pygame.Surface(self.size)
+        self.surface.fill(bgcolor)
+        self.surface.blit(self.text, (0, 0))
+        self.rect = pygame.Rect(self.x, self.y, self.size[0], self.size[1])
+
+    def show(self) -> None:
+        self.screen.blit(self.surface, (self.x, self.y))
+
+    def isClicked(self, event: Event):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    # self.change_text(self., bg="red")
+                    return True
+        return False
+
+
+class MainScene:
     def __init__(self) -> None:
+        self.scene = pygame.display.set_mode([600, 600])
+        self.AIvs1Button = Button(self.scene, "Start Single Player Mode",
+                                  (10, 50), 20, "Purple")
+        self.MultiButton = Button(self.scene, "Start Multi player Mode",
+                                  (10, 100), 20, "Purple")
+        self.AIvsAIButton = Button(self.scene, "Start AI Mode",
+                                   (10, 150), 20, "Purple")
+        self.scene.fill(pygame.Color("Cyan"))
+
+    def update(self):
+        pass
+
+    def show(self):
+        self.AIvs1Button.show()
+        self.MultiButton.show()
+        self.AIvsAIButton.show()
+        pygame.display.flip()
+
+    def handle_event(self, event):
+        if self.AIvs1Button.isClicked(event):
+            return 0
+        if self.MultiButton.isClicked(event):
+            return 1
+        if self.AIvsAIButton.isClicked(event):
+            return 2
+        return None
+
+
+class TicGameScene:
+    def __init__(self) -> None:
+        self.scene = pygame.display.set_mode([600, 600])
+        self.gui = DrawGameTic(self.scene, border=True)
+        self.game = Run_Game()
+
+    def update(self):
+        self.gui.update(self.game.game.tic_board)
+
+    def show(self):
+        self.gui.update(self.game.game.tic_board)
+        pygame.display.flip()
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = pygame.mouse.get_pos()
+            index = self.gui.click(x, y)
+            y = index // 3
+            x = index % 3
+            self.game.run(x, y)
+            self.game.run()
+
+
+class Settings:
+    def __init__(self, screen) -> None:
         pass

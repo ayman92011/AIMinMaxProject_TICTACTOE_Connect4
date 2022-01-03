@@ -1,43 +1,35 @@
-from rungame import Run_Game
-from Gui import DrawGameTic
+from typing import Union
+from Gui import MainScene, TicGameScene
 
 # Import and initialize the pygame library
 import pygame
 pygame.init()
 
 # Set up the drawing window
-screen = pygame.display.set_mode([600, 600])
+sceneOb: Union[MainScene, TicGameScene] = MainScene()
+scene = sceneOb.scene
 
 
 if __name__ == "__main__":
-    game = Run_Game()
-    # while not game.isWin():
-    #     x = int(input("Enter x: "))
-    #     y = int(input("Enter y: "))
-    #     print(game.run(x, y))
-    #     print(game.run())
-    # print(game.game.win())
     running = True
+    mode_select = None
     while running:
-        screen.fill((0, 0, 0))
-        # gui = DrawGameTic(screen, start_x=100, start_y=50, border=True)
-        gui = DrawGameTic(screen, border=True)
-        gui.update(game.game.tic_board)
+
         for event in pygame.event.get():
+            mode_select = sceneOb.handle_event(event)
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos()
-                index = gui.click(x, y)
-                y = index // 3
-                x = index % 3
-                print(x, y)
-                game.run(x, y)
 
-        pygame.display.flip()
+        sceneOb.update()
+        sceneOb.show()
+
+        if mode_select is not None:
+            scene.fill((0, 0, 0))
+            sceneOb = TicGameScene()
+            mode_select = None
 
     # Done! Time to quit.
     pygame.quit()
