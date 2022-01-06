@@ -5,13 +5,12 @@ from TicTacToeLogic import TicTacToe
 
 
 class MinMaxAI:
-    def __init__(self, game: Union[TicTacToe, Connect4] = None, alphabeta=False) -> None:
+    def __init__(self, game: Union[TicTacToe, Connect4] = None) -> None:
         if not game:
             game = TicTacToe()
         else:
             self.game = game
         self.game_board = self.game.tic_board
-        self.alphabeta = alphabeta
 
     # Determines if the made move is a legal move
     def is_valid(self, px, py):
@@ -147,86 +146,12 @@ class MinMaxAI:
 
         return minv, qx, qy
 
-    # Player 'O' is max, in this case AI
-    def max_alpha_beta(self, alpha, beta):
-        maxv = -2
-        px = None
-        py = None
-
-        result = self.is_end()
-
-        if result == 'X':
-            return -1, 0, 0
-        elif result == 'O':
-            return 1, 0, 0
-        elif result == '.':
-            return 0, 0, 0
-
-        for i in range(0, 3):
-            for j in range(0, 3):
-                if self.game_board[i][j] == ' ':
-                    self.game_board[i][j] = 'O'
-                    m, _, _ = self.min_alpha_beta(alpha, beta)
-                    if m > maxv:
-                        maxv = m
-                        px = i
-                        py = j
-                    self.game_board[i][j] = ' '
-
-                    # Next two ifs in Max and Min are the only difference between regular algorithm and minimax
-                    if maxv >= beta:
-                        return maxv, px, py
-
-                    if maxv > alpha:
-                        alpha = maxv
-
-        return maxv, px, py
-
-    # Player 'X' is min, in this case human
-    def min_alpha_beta(self, alpha, beta):
-
-        minv = 2
-
-        qx = None
-        qy = None
-
-        result = self.is_end()
-
-        if result == 'X':
-            return -1, 0, 0
-        elif result == 'O':
-            return 1, 0, 0
-        elif result == '.':
-            return 0, 0, 0
-
-        for i in range(0, 3):
-            for j in range(0, 3):
-                if self.game_board[i][j] == ' ':
-                    self.game_board[i][j] = 'X'
-                    m, _, _ = self.max_alpha_beta(alpha, beta)
-                    if m < minv:
-                        minv = m
-                        qx = i
-                        qy = j
-                    self.game_board[i][j] = ' '
-
-                    if minv <= alpha:
-                        return minv, qx, qy
-
-                    if minv < beta:
-                        beta = minv
-
-        return minv, qx, qy
-
     def best_move(self, player):
         self.game_board = self.game.tic_board
         # If it's player's turn
         if player == 'X':
             start = time.time()
-            if self.alphabeta:
-                _, qx, qy = self.min_alpha_beta(-2, 2)
-            else:
-                _, qx, qy = self.min()
+            _, qx, qy = self.min()
             end = time.time()
             print(self.game)
             print('Evaluation time: {}s'.format(round(end - start, 7)))
@@ -236,10 +161,7 @@ class MinMaxAI:
         # If it's AI's turn
         else:
             start = time.time()
-            if self.alphabeta:
-                _, qx, qy = self.max_alpha_beta(-2, 2)
-            else:
-                _, qx, qy = self.max()
+            _, qx, qy = self.max()
             end = time.time()
             print(self.game)
             print('Evaluation time: {}s'.format(round(end - start, 7)))

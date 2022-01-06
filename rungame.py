@@ -10,23 +10,23 @@ class Run_Game:
             self.game = TicTacToe()
 
         self.start = start
-        self.ai_x = MinMaxAI("X", self.game)
-        self.ai_o = MinMaxAI("O", self.game)
+        self.ai = MinMaxAI(self.game, True)
 
-    def run(self, x=None, y=None):
+    def run(self, x=None, y=None, do_nothing=False):
         if self.isWin():
             return 0
+        if self.game.turn:
+            x_ai, y_ai = self.ai.best_move("X")
+        else:
+            x_ai, y_ai = self.ai.best_move("O")
+        print("--------------------------------")
         if self.start:
             self.start = False
-            return self.game.play(self.ai_x.findBestMove())
+            return self.game.play(x_ai, y_ai)
         if x is not None:
             return self.game.play(x, y)
-
-        if self.game.turn:
-            x, y = self.ai_x.findBestMove()
-        else:
-            x, y = self.ai_o.findBestMove()
-        return self.game.play(x, y)
+        if not do_nothing:
+            return self.game.play(x_ai, y_ai)
 
     def isWin(self):
         if self.game.win() != "":

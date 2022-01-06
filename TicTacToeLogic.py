@@ -53,10 +53,8 @@ class TicTacToe:
         """
         check_x = ["X", "X", "X"]
         check_o = ["O", "O", "O"]
-        win_x = "Player 1 wins"
-        win_o = "Player 2 wins"
-        if not self.isMovesLeft():
-            return "Draw"
+        win_x = "X wins"
+        win_o = "O wins"
         for i in range(3):
             # check for horizontal wins
             if self.tic_board[i] == check_x:
@@ -77,8 +75,19 @@ class TicTacToe:
             return win_x
         if [self.tic_board[i][len(self.tic_board[0])-i-1] for i in range(len(self.tic_board))] == check_o:
             return win_o
-
+        if not self.isMovesLeft():
+            return "Draw"
         return ""
 
     def __str__(self) -> str:
         return f"{self.tic_board[0]}\n{self.tic_board[1]}\n{self.tic_board[2]}"
+
+
+if __name__ == "__main__":
+    game = TicTacToe()
+    game.tic_board = [
+        ['X', 'O', 'O'],
+        ['X', 'O', 'O'],
+        ['X', 'X', 'X']]
+    print(game)
+    print(game.win())

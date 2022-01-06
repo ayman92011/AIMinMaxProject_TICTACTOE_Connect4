@@ -152,7 +152,7 @@ class MainScene:
                                   (10, 100), 20, "Purple")
         self.AIvsAIButton = Button(self.scene, "Start AI Mode",
                                    (10, 150), 20, "Purple")
-        self.scene.fill(pygame.Color("Cyan"))
+        self.scene.fill(pygame.Color("Black"))
 
     def update(self):
         pass
@@ -178,6 +178,7 @@ class TicGameScene:
         self.scene = pygame.display.set_mode([600, 600])
         self.gui = DrawGameTic(self.scene, border=True)
         self.game = Run_Game()
+        self.game.run()
 
     def update(self):
         self.gui.update(self.game.game.tic_board)
