@@ -1,11 +1,18 @@
 import time
-from typing import Union
+from typing import Tuple, Union
 from Connect4Logic import Connect4
 from TicTacToeLogic import TicTacToe
 
 
 class MinMaxAI:
-    def __init__(self, game: Union[TicTacToe, Connect4] = None, alphabeta=False) -> None:
+    def __init__(self, game: Union[TicTacToe, Connect4] = None, alphabeta: bool = False) -> None:
+        """
+            Class for the logic of the MinMax AI made with MinMax and AlphaBeta.
+
+        Args:
+            game (Union[TicTacToe, Connect4], optional): The game object can be TicTacToe or Connect4. Defaults to None.
+            alphabeta (bool, optional): Flag for when you want to use alpha beta. Defaults to False.
+        """
         if not game:
             game = TicTacToe()
         else:
@@ -13,8 +20,17 @@ class MinMaxAI:
         self.game_board = self.game.tic_board
         self.alphabeta = alphabeta
 
-    # Determines if the made move is a legal move
-    def is_valid(self, px, py):
+    def is_valid(self, px: int, py: int) -> bool:
+        """
+            Checks if you want to play a valid move or not
+
+        Args:
+            px (int): The x corrds for the move
+            py (int): The y corrds for the move
+
+        Returns:
+            Bool: true if the move is valid else returns false
+        """
         if px < 0 or px > 2 or py < 0 or py > 2:
             return False
         elif self.game_board[px][py] != ' ':
@@ -22,21 +38,13 @@ class MinMaxAI:
         else:
             return True
 
-    # Checks if the game has ended and returns the winner in each case
-    def is_end(self):
-        # # Vertical win
-        # for i in range(0, 3):
-        #     if (self.current_state[0][i] != '.' and
-        #         self.current_state[0][i] == self.current_state[1][i] and
-        #             self.current_state[1][i] == self.current_state[2][i]):
-        #         return self.current_state[0][i]
+    def is_end(self) -> str:
+        """
+            Checks if any player wins or there is no other moves to play
 
-        # # Horizontal win
-        # for i in range(0, 3):
-        #     if (self.current_state[i] == ['X', 'X', 'X']):
-        #         return 'X'
-        #     elif (self.current_state[i] == ['O', 'O', 'O']):
-        #         return 'O'
+        Returns:
+            str: X if x wins, Y if y wins, . if it is a draw, None if the game hasm't ended
+        """
         if self.game.win() == "X wins":
             return "X"
         elif self.game.win() == "O wins":
@@ -45,31 +53,16 @@ class MinMaxAI:
             return "."
 
         return None
-        # # Main diagonal win
-        # if (self.current_state[0][0] != '.' and
-        #     self.current_state[0][0] == self.current_state[1][1] and
-        #         self.current_state[0][0] == self.current_state[2][2]):
-        #     return self.current_state[0][0]
 
-        # # Second diagonal win
-        # if (self.current_state[0][2] != '.' and
-        #     self.current_state[0][2] == self.current_state[1][1] and
-        #         self.current_state[0][2] == self.current_state[2][0]):
-        #     return self.current_state[0][2]
+    def max(self) -> Tuple[int, int, int]:
+        """
+            Function for the max value calls min recersevly to detrmine the best move for the O player
 
-        # # Is whole board full?
-        # for i in range(0, 3):
-        #     for j in range(0, 3):
-        #         # There's an empty field, we continue the game
-        #         if (self.current_state[i][j] == '.'):
-        #             return None
+        Returns:
+            Tuple[int, int, int]: The best move cost, x, y
+        """
 
-        # # It's a tie!
-        # return '.'
-
-    # Player 'O' is max, in this case AI
-    def max(self):
-
+        # Player 'O' is max, in this case AI
         # Possible values for maxv are:
         # -1 - loss
         # 0  - a tie
@@ -111,9 +104,15 @@ class MinMaxAI:
                     self.game_board[i][j] = ' '
         return maxv, px, py
 
-    # Player 'X' is min, in this case human
-    def min(self):
+    def min(self) -> Tuple[int, int, int]:
+        """
+            Function for the min value calls max recersevly to detrmine the best move for the X player
 
+        Returns:
+            Tuple[int, int, int]: The best move cost, x, y
+        """
+
+        # Player 'X' is min, in this case human
         # Possible values for minv are:
         # -1 - win
         # 0  - a tie
@@ -147,8 +146,19 @@ class MinMaxAI:
 
         return minv, qx, qy
 
-    # Player 'O' is max, in this case AI
-    def max_alpha_beta(self, alpha, beta):
+    def max_alpha_beta(self, alpha: int, beta: int) -> Tuple[int, int, int]:
+        """
+            Function for the max value calls min recersevly to detrmine the best move for the O player but with using alphabeta
+
+        Args:
+            alpha (int): The alpha value
+            beta (int): The beta value
+
+        Returns:
+            Tuple[int, int, int]: The best move cost, x, y
+        """
+
+        # Player 'O' is max, in this case AI
         maxv = -2
         px = None
         py = None
@@ -182,9 +192,18 @@ class MinMaxAI:
 
         return maxv, px, py
 
-    # Player 'X' is min, in this case human
-    def min_alpha_beta(self, alpha, beta):
+    def min_alpha_beta(self, alpha: int, beta: int) -> Tuple[int, int, int]:
+        """Function for the min value calls max recersevly to detrmine the best move for the X player but with using alphabeta
 
+        Args:
+            alpha (int): The alpha value
+            beta (int): The beta value
+
+        Returns:
+            Tuple[int, int, int]: The best move cost, x, y
+        """
+
+        # Player 'X' is min, in this case human
         minv = 2
 
         qx = None
@@ -218,7 +237,16 @@ class MinMaxAI:
 
         return minv, qx, qy
 
-    def best_move(self, player):
+    def best_move(self, player: str) -> Tuple[int, int]:
+        """
+            The best move to be played by the player or the AI
+
+        Args:
+            player (str): X, or O
+
+        Returns:
+            Tuple[int, int]: The best move for the player (x, y)
+        """
         self.game_board = self.game.tic_board
         # If it's player's turn
         if player == 'X':
