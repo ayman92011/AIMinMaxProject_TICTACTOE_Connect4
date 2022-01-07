@@ -11,28 +11,31 @@ class Connect4:
                               [" ", " ", " ", " ", " ", " ", " "]]
         self.turn = True
 
-    def play(self, x: int, y: int) -> list:
-        """ 
+    def play(self, x: int, y: int) -> bool:
+        """
             playes one move for each player
 
         Args:
             x (int): x coords for place to play
             y (int): y coords for place to play
 
-        Raises:
-            Exception: place entered twice
-
         Returns:
-            list: playing board
+            bool: True if you can play the move else False
         """
         if self.connect_board[x][y] != " ":
-            raise Exception("enter valued place")
+            return False
+        print(x, y)
         if self.turn:
-            self.connect_board[x][y] = "X"
+            self.connect_board[self.check_avalable(y)][y] = "X"
         else:
-            self.connect_board[x][y] = "O"
+            self.connect_board[self.check_avalable(y)][y] = "O"
         self.turn = not self.turn
-        return self.connect_board
+        return True
+
+    def check_avalable(self, y):
+        for i in range(5, -1, -1):
+            if self.connect_board[i][y] == " ":
+                return i
 
     def isMovesLeft(self) -> bool:
         """
@@ -41,11 +44,25 @@ class Connect4:
         Returns:
             bool: True if there are any left moves
         """
-        for i in range(len(self.tic_board)):
-            for j in range(len(self.tic_board[0])):
-                if (self.tic_board[i][j] == " "):
+        for i in range(len(self.connect_board)):
+            for j in range(len(self.connect_board[0])):
+                if (self.connect_board[i][j] == " "):
                     return True
         return False
+
+    def movesLeft(self) -> int:
+        """
+            Gets the number of moves left
+
+        Returns:
+            int: The number of empty cells
+        """
+        sum = 0
+        for i in range(len(self.connect_board)):
+            for j in range(len(self.connect_board[0])):
+                if (self.connect_board[i][j] == " "):
+                    sum += 1
+        return sum
 
     def win(self) -> str:
         """
@@ -54,31 +71,64 @@ class Connect4:
         Returns:
             str: player 1 wins or player 2 wins
         """
-        check_x = ["X", "X", "X", "X"]
-        check_o = ["O", "O", "O", "O"]
-        win_x = "Player 1 wins"
-        win_o = "Player 2 wins"
+        win_x = "X wins"
+        win_o = "O wins"
+        # Check horizontal locations for win
+        for c in range(len(self.connect_board[0])-3):
+            for r in range(len(self.connect_board)):
+                if self.connect_board[r][c] == "X" and self.connect_board[r][c+1] == "X" and self.connect_board[r][c+2] == "X" and self.connect_board[r][c+3] == "X":
+                    return win_x
+                if self.connect_board[r][c] == "O" and self.connect_board[r][c+1] == "O" and self.connect_board[r][c+2] == "O" and self.connect_board[r][c+3] == "O":
+                    return win_o
+
+        # Check vertical locations for win
+        for c in range(len(self.connect_board[0])):
+            for r in range(len(self.connect_board)-3):
+                if self.connect_board[r][c] == "X" and self.connect_board[r+1][c] == "X" and self.connect_board[r+2][c] == "X" and self.connect_board[r+3][c] == "X":
+                    return win_x
+                if self.connect_board[r][c] == "O" and self.connect_board[r+1][c] == "O" and self.connect_board[r+2][c] == "O" and self.connect_board[r+3][c] == "O":
+                    return win_o
+
+        # Check positively sloped diaganols
+        for c in range(len(self.connect_board[0])-3):
+            for r in range(len(self.connect_board)-3):
+                if self.connect_board[r][c] == "X" and self.connect_board[r+1][c+1] == "X" and self.connect_board[r+2][c+2] == "X" and self.connect_board[r+3][c+3] == "X":
+                    return win_x
+                if self.connect_board[r][c] == "O" and self.connect_board[r+1][c+1] == "O" and self.connect_board[r+2][c+2] == "O" and self.connect_board[r+3][c+3] == "O":
+                    return win_o
+
+        # Check negatively sloped diaganols
+        for c in range(len(self.connect_board[0])-3):
+            for r in range(3, len(self.connect_board)):
+                if self.connect_board[r][c] == "X" and self.connect_board[r-1][c+1] == "X" and self.connect_board[r-2][c+2] == "X" and self.connect_board[r-3][c+3] == "X":
+                    return win_x
+                if self.connect_board[r][c] == "O" and self.connect_board[r-1][c+1] == "O" and self.connect_board[r-2][c+2] == "O" and self.connect_board[r-3][c+3] == "O":
+                    return win_o
+
         if not self.isMovesLeft():
             return "Draw"
-        for i in range(3):
-            # check for horizontal wins
-            if self.tic_board[i] == check_x:
-                return win_x
-            if self.tic_board[i] == check_o:
-                return win_o
-            # check for vertical wins
-            if [row[i] for row in self.tic_board] == check_x:
-                return win_x
-            if [row[i] for row in self.tic_board] == check_o:
-                return win_o
-        # check for diagonals
-        if [self.tic_board[i1][i1] for i1 in range(len(self.tic_board))] == check_x:
-            return win_x
-        if [self.tic_board[i1][i1] for i1 in range(len(self.tic_board))] == check_o:
-            return win_o
-        if [self.tic_board[i][len(self.tic_board[0])-i-1] for i in range(len(self.tic_board))] == check_x:
-            return win_x
-        if [self.tic_board[i][len(self.tic_board[0])-i-1] for i in range(len(self.tic_board))] == check_o:
-            return win_o
-
         return ""
+
+    def __str__(self) -> str:
+        """ToString method to print the class
+
+        Returns:
+            str: board in format ['', '', '', '', '', '', '']
+                                 ['', '', '', '', '', '', '']
+                                 ['', '', '', '', '', '', '']
+                                 ['', '', '', '', '', '', '']
+                                 ['', '', '', '', '', '', '']
+                                 ['', '', '', '', '', '', '']
+        """
+        return f"{self.connect_board[0]}\n{self.connect_board[1]}\n{self.connect_board[2]}\n{self.connect_board[3]}\n{self.connect_board[4]}\n{self.connect_board[5]}"
+
+
+if __name__ == "__main__":
+    game = Connect4()
+    game.connect_board = [[" ", " ", " ", " ", " ", " ", " "],
+                          [" ", " ", " ", " ", " ", " ", " "],
+                          [" ", " ", " ", " ", " ", " ", " "],
+                          [" ", " ", " ", " ", " ", " ", " "],
+                          [" ", " ", " ", " ", " ", " ", " "],
+                          [" ", " ", " ", " ", " ", " ", " "]]
+    print(game.win())

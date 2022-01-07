@@ -1,5 +1,5 @@
 # Used for type checking
-from typing import Tuple
+from typing import Union
 # The connect4 logic class
 from Connect4Logic import Connect4
 # The TicTacToe logic class
@@ -11,7 +11,7 @@ from random import randint
 
 
 class Run_Game:
-    def __init__(self, game: Tuple[TicTacToe, Connect4] = None, start: bool = False) -> None:
+    def __init__(self, game: Union[TicTacToe, Connect4] = None, start: bool = False) -> None:
         """
             Class to start the game with the AI and controls the logic of the game
 
@@ -23,12 +23,19 @@ class Run_Game:
             self.__game = game
         else:
             self.__game = TicTacToe()
-        self.game_board = self.__game.tic_board
+        if isinstance(self.__game, TicTacToe):
+            self.game_board = self.__game.tic_board
+            if start:
+                x_rand = randint(0, 2)
+                y_rand = randint(0, 2)
+                self.run(x_rand, y_rand)
+        else:
+            self.game_board = self.__game.connect_board
+            if start:
+                x_rand = randint(0, 5)
+                y_rand = randint(0, 6)
+                self.run(x_rand, y_rand)
         self.ai = MinMaxAI(self.__game, True)
-        if start:
-            x_rand = randint(0, 2)
-            y_rand = randint(0, 2)
-            self.run(x_rand, y_rand)
 
     def run(self, x: int = None, y: int = None, do_nothing: bool = False) -> bool:
         """
@@ -44,13 +51,13 @@ class Run_Game:
         """
         if self.isWin():
             return False
+        if x is not None:
+            return self.__game.play(x, y)
         if self.__game.turn:
             x_ai, y_ai = self.ai.best_move("X")
         else:
             x_ai, y_ai = self.ai.best_move("O")
         print("--------------------------------")
-        if x is not None:
-            return self.__game.play(x, y)
         if not do_nothing:
             return self.__game.play(x_ai, y_ai)
 

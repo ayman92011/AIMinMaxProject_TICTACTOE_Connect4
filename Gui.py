@@ -2,6 +2,7 @@ import pygame
 from typing import List, Tuple
 from operator import add
 from pygame.event import Event
+from Connect4Logic import Connect4
 from rungame import Run_Game
 from random import randint
 import time
@@ -97,6 +98,106 @@ class DrawGameTic:
                     game_board[i][j], True, pygame.Color("White"))
                 self.screen.blit(
                     img, tuple(map(add, self.rectlist[i + j * 3].topleft, (25, -25))))
+
+
+class DrawGameConnect4:
+    def __init__(self, screen: pygame.Surface = None,
+                 start_x: int = 0,
+                 start_y: int = 0,
+                 size_x: int = 700,
+                 size_y: int = 500,
+                 border: bool = False) -> None:
+        """
+            Class for creating the tictactoe enterface
+
+        Args:
+            screen (pygame.Surface, optional): The screen object to drawon. Defaults to None.
+            start_x (int, optional): The x value to start the grid in pixels. Defaults to 0.
+            start_y (int, optional): The y value to start the grid in pixels. Defaults to 0.
+            size_x (int, optional): The colum size in the grid. Defaults to 600.
+            size_y (int, optional): The row size in the grid. Defaults to 600.
+            border (bool, optional): Flag for if you want to draw a border for the grid. Defaults to False.
+        """
+        # Create a screen object if one is not passed
+        if screen:
+            self.screen: pygame.Surface = screen
+        else:
+            self.screen: pygame.Surface = pygame.display.set_mode([600, 600])
+
+        self.size_colum = int(size_x // 7)
+        self.size_row = int(size_y // 6)
+        self.size_x = size_x
+        self.size_y = size_y
+        self.start_x = start_x
+        self.start_y = start_y
+        self.rectlist: List[pygame.Rect] = []
+        self.font = pygame.font.SysFont(
+            "Arial", self.size_colum + self.size_row // 10)
+
+        # Draws the border of the grid
+        if border:
+            pygame.draw.line(self.screen, (255, 255, 255),
+                             (start_x, start_y), (start_x + size_x, start_y), 5)
+            pygame.draw.line(self.screen, (255, 255, 255),
+                             (start_x, start_y), (start_x, start_y + size_y), 5)
+            pygame.draw.line(self.screen, (255, 255, 255),
+                             (start_x + size_x, start_y), (start_x + size_x, start_y + size_y), 5)
+            pygame.draw.line(self.screen, (255, 255, 255),
+                             (start_x, start_y + size_y), (start_x + size_x, start_y + size_y), 5)
+
+        # Draws the horizontal in the grid
+        for i in range(1, 6):
+            pygame.draw.line(self.screen, (255, 255, 255),
+                             (start_x, self.size_row * i + start_y),
+                             (start_x + size_x, self.size_row * i + start_y), 5)
+
+        for i in range(1, 7):
+            pygame.draw.line(self.screen, (255, 255, 255),
+                             (self.size_colum * i + start_x, start_y),
+                             (self.size_colum * i + start_x, start_y + size_y), 5)
+
+        # Create the hit box for each grid box
+        for j in range(6):
+            for i in range(7):
+                # print(i, j)
+                # pygame.draw.rect(self.screen, (randint(0, 255), randint(0, 255), randint(0, 255)), pygame.Rect(
+                #     start_x + self.size_colum * i,
+                #     start_y + self.size_row * j,
+                #     self.size_colum,
+                #     self.size_row))
+                self.rectlist.append(pygame.Rect(
+                    start_x + self.size_colum * i,
+                    start_y + self.size_row * j,
+                    self.size_colum,
+                    self.size_row))
+
+    def click(self, x: int, y: int) -> int:
+        """
+            Function to know which square did you press
+
+        Args:
+            x (int): The x corrds for the click in pixels
+            y (int): The y corrds for the click in pixels
+
+        Returns:
+            int: The square pressesd from 0 to 8
+        """
+        for index, rect in enumerate(self.rectlist):
+            if rect.collidepoint(x, y):
+                return index
+
+    def update(self, game_board: List[List[int]]) -> None:
+        """Function to draw the board on the gui
+
+        Args:
+            game_board (List[List[int]]): The game board
+        """
+        for i in range(len(game_board)):
+            for j in range(len(game_board[0])):
+                img = self.font.render(
+                    game_board[i][j], True, pygame.Color("White"))
+                self.screen.blit(
+                    img, tuple(map(add, self.rectlist[i * 7 + j].topleft, (25, -25))))
 
 
 class Button:
@@ -327,3 +428,78 @@ class TicGameScene:
             if self.game.run(x, y):
                 if self.ai:
                     self.game.run()
+
+
+class Connect4GameScene:
+    def __init__(self, ai: bool = True, ai_goes_first: bool = False, aiall: bool = False) -> None:
+        """
+            Class for the Connect 4 Game screen in the GUI
+
+        Args:
+            ai (bool, optional): Flag to konw if you want to use AI as player. Defaults to True.
+            ai_goes_first (bool, optional): Flag to know if you want the AI to go first. Defaults to False.
+            aiall (bool, optional): Flag to know if you want AI vs AI mode. Defaults to False.
+        """
+        self.scene = pygame.display.set_mode([700, 700])
+        pygame.display.set_caption("Connect 4")
+        self.homeButton = Button(self.scene, "Home", (20, 20), 50, "Blue")
+        self.aiButton = Button(self.scene, "AI Start", (200, 20), 50, "Blue")
+        self.gui = DrawGameConnect4(self.scene, border=True, start_y=100)
+        self.ai = ai
+        self.aiall = aiall
+        game = Connect4()
+        self.game = Run_Game(game, start=ai_goes_first)
+        self.timer = Timer(self.scene, (450, 20), 50)
+        self.statusButton = Button(self.scene, "", (205, 350), 100)
+        self.play_ai = False
+
+    def show(self) -> None:
+        """
+            Function to update the game screen in the GUI
+        """
+        self.homeButton.show()
+        self.aiButton.show()
+        self.gui.update(self.game.game_board)
+        if self.game.isWin():
+            self.statusButton.change_text(text=self.game.win(), bgcolor="Blue")
+            self.statusButton.show()
+        else:
+            self.timer.update()
+        self.timer.show()
+        pygame.display.flip()
+
+    def handle_event(self, event: Event) -> None:
+        """
+            Function to handle any event while i the game screen
+
+        Args:
+            event (Event): pygame event
+        """
+        if self.homeButton.isHover():
+            self.homeButton.change_text(bgcolor="Red")
+        else:
+            self.homeButton.change_text(bgcolor="Blue")
+        if self.statusButton.isClicked(event):
+            self.statusButton.hidden = True
+        if self.homeButton.isClicked(event):
+            return 0
+        if self.aiButton.isClicked(event):
+            self.play_ai = True
+        if self.aiall and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_p:
+                if self.game.movesLeft() == 9:
+                    x_rand = randint(0, 2)
+                    y_rand = randint(0, 2)
+                    self.game.run(x_rand, y_rand)
+                self.game.run()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = pygame.mouse.get_pos()
+            index = self.gui.click(x, y)
+            if index is not None:
+                print(index)
+                x = index // 7
+                y = index % 7
+                # print(x, y)
+                if self.game.run(x, y):
+                    if self.ai and self.play_ai:
+                        self.game.run()

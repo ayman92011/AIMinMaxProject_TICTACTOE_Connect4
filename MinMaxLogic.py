@@ -6,6 +6,8 @@ from typing import Tuple, Union
 from Connect4Logic import Connect4
 # The TicTacToe Logic class
 from TicTacToeLogic import TicTacToe
+import functools
+var = 100000
 
 
 class MinMaxAI:
@@ -17,11 +19,17 @@ class MinMaxAI:
             game (Union[TicTacToe, Connect4], optional): The game object can be TicTacToe or Connect4. Defaults to None.
             alphabeta (bool, optional): Flag for when you want to use alpha beta. Defaults to False.
         """
-        if not game:
+        if game == None:
             game = TicTacToe()
         else:
             self.game = game
-        self.game_board = self.game.tic_board
+        if isinstance(self.game, TicTacToe):
+            self.game_board = self.game.tic_board
+            self.row = self.col = 3
+        else:
+            self.game_board = self.game.connect_board
+            self.row = 6
+            self.col = 7
         self.alphabeta = alphabeta
 
     def is_valid(self, px: int, py: int) -> bool:
@@ -35,7 +43,7 @@ class MinMaxAI:
         Returns:
             Bool: true if the move is valid else returns false
         """
-        if px < 0 or px > 2 or py < 0 or py > 2:
+        if px < 0 or px > self.row-1 or py < 0 or py > self.col - 1:
             return False
         elif self.game_board[px][py] != ' ':
             return False
@@ -58,6 +66,7 @@ class MinMaxAI:
 
         return None
 
+    @functools.lru_cache(var)
     def max(self) -> Tuple[int, int, int]:
         """
             Function for the max value calls min recersevly to detrmine the best move for the O player
@@ -92,8 +101,8 @@ class MinMaxAI:
         elif result == '.':
             return 0, 0, 0
 
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.row):
+            for j in range(0, self.col):
                 if self.game_board[i][j] == ' ':
                     # On the empty field player 'O' makes a move and calls Min
                     # That's one branch of the game tree.
@@ -108,6 +117,7 @@ class MinMaxAI:
                     self.game_board[i][j] = ' '
         return maxv, px, py
 
+    @functools.lru_cache(var)
     def min(self) -> Tuple[int, int, int]:
         """
             Function for the min value calls max recersevly to detrmine the best move for the X player
@@ -137,8 +147,8 @@ class MinMaxAI:
         elif result == '.':
             return 0, 0, 0
 
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.row):
+            for j in range(0, self.col):
                 if self.game_board[i][j] == ' ':
                     self.game_board[i][j] = 'X'
                     m, _, _ = self.max()
@@ -150,6 +160,7 @@ class MinMaxAI:
 
         return minv, qx, qy
 
+    @functools.lru_cache(var)
     def max_alpha_beta(self, alpha: int, beta: int) -> Tuple[int, int, int]:
         """
             Function for the max value calls min recersevly to detrmine the best move for the O player but with using alphabeta
@@ -176,8 +187,8 @@ class MinMaxAI:
         elif result == '.':
             return 0, 0, 0
 
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.row):
+            for j in range(0, self.col):
                 if self.game_board[i][j] == ' ':
                     self.game_board[i][j] = 'O'
                     m, _, _ = self.min_alpha_beta(alpha, beta)
@@ -196,6 +207,7 @@ class MinMaxAI:
 
         return maxv, px, py
 
+    @functools.lru_cache(var)
     def min_alpha_beta(self, alpha: int, beta: int) -> Tuple[int, int, int]:
         """Function for the min value calls max recersevly to detrmine the best move for the X player but with using alphabeta
 
@@ -216,14 +228,20 @@ class MinMaxAI:
         result = self.is_end()
 
         if result == 'X':
+            # print(self.game)
+            # print(-1)
             return -1, 0, 0
         elif result == 'O':
+            # print(self.game)
+            # print(1)
             return 1, 0, 0
         elif result == '.':
+            # print(self.game)
+            # print(0)
             return 0, 0, 0
 
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.row):
+            for j in range(0, self.col):
                 if self.game_board[i][j] == ' ':
                     self.game_board[i][j] = 'X'
                     m, _, _ = self.max_alpha_beta(alpha, beta)
@@ -251,7 +269,6 @@ class MinMaxAI:
         Returns:
             Tuple[int, int]: The best move for the player (x, y)
         """
-        self.game_board = self.game.tic_board
         # If it's player's turn
         if player == 'X':
             start = time.time()

@@ -2,7 +2,7 @@ from pygame._sdl2.video import Window
 # For Type checking
 from typing import Union
 # The GUI classes
-from Gui import MainScene, TicGameScene
+from Gui import Connect4GameScene, MainScene, TicGameScene
 
 # Import and initialize the pygame library
 import pygame
@@ -51,6 +51,7 @@ if __name__ == "__main__":
                 scene.fill((0, 0, 0))
                 sceneOb = TicGameScene(aiall=True)
                 mode_select = None
+            # sceneOb = Connect4GameScene()
 
     # Done! Time to quit.
     pygame.quit()
