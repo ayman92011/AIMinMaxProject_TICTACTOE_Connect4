@@ -51,7 +51,10 @@ if __name__ == "__main__":
                 scene.fill((0, 0, 0))
                 sceneOb = TicGameScene(aiall=True)
                 mode_select = None
-            # sceneOb = Connect4GameScene()
+            elif mode_select == 5:
+                scene.fill((0, 0, 0))
+                sceneOb = Connect4GameScene()
+                mode_select = None
 
     # Done! Time to quit.
     pygame.quit()

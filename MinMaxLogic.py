@@ -7,7 +7,7 @@ from Connect4Logic import Connect4
 # The TicTacToe Logic class
 from TicTacToeLogic import TicTacToe
 import functools
-var = 100000
+var = 1000
 
 
 class MinMaxAI:
@@ -25,12 +25,16 @@ class MinMaxAI:
             self.game = game
         if isinstance(self.game, TicTacToe):
             self.game_board = self.game.tic_board
+            # self.game_board = tuple([tuple(self.game.tic_board[0]),
+            #                         tuple(self.game.tic_board[1]),
+            #                         tuple(self.game.tic_board[2])])
             self.row = self.col = 3
         else:
             self.game_board = self.game.connect_board
             self.row = 6
             self.col = 7
         self.alphabeta = alphabeta
+        self.time_list = []
 
     def is_valid(self, px: int, py: int) -> bool:
         """
@@ -66,198 +70,189 @@ class MinMaxAI:
 
         return None
 
-    @functools.lru_cache(var)
-    def max(self) -> Tuple[int, int, int]:
-        """
-            Function for the max value calls min recersevly to detrmine the best move for the O player
+    def ignore_unhashable(func):
+        uncached = func.__wrapped__
+        attributes = functools.WRAPPER_ASSIGNMENTS + \
+            ('cache_info', 'cache_clear')
 
-        Returns:
-            Tuple[int, int, int]: The best move cost, x, y
-        """
+        @functools.wraps(func, assigned=attributes)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except TypeError as error:
+                if 'unhashable type' in str(error):
+                    return uncached(*args, **kwargs)
+                raise
+        wrapper.__uncached__ = uncached
+        return wrapper
 
-        # Player 'O' is max, in this case AI
-        # Possible values for maxv are:
-        # -1 - loss
-        # 0  - a tie
-        # 1  - win
+    @ignore_unhashable
+    @ functools.lru_cache(var)
+    def minmax(self, game_board, isMax: bool) -> Tuple[int, int, int]:
+        # print(game_board)
+        # game_board = list((list(game_board[0]),
+        #                    list(game_board[1]),
+        #                    list(game_board[2])))
+        if isMax:
+            # Player 'O' is max, in this case AI
+            # Possible values for maxv are:
+            # -1 - loss
+            # 0  - a tie
+            # 1  - win
 
-        # We're initially setting it to -2 as worse than the worst case:
-        maxv = -2
+            # We're initially setting it to -2 as worse than the worst case:
+            maxv = -2
 
-        px = None
-        py = None
+            px = None
+            py = None
 
-        result = self.is_end()
+            result = self.is_end()
 
-        # If the game came to an end, the function needs to return
-        # the evaluation function of the end. That can be:
-        # -1 - loss
-        # 0  - a tie
-        # 1  - win
-        if result == 'X':
-            return -1, 0, 0
-        elif result == 'O':
-            return 1, 0, 0
-        elif result == '.':
-            return 0, 0, 0
+            # If the game came to an end, the function needs to return
+            # the evaluation function of the end. That can be:
+            # -1 - loss
+            # 0  - a tie
+            # 1  - win
+            if result == 'X':
+                return -1, 0, 0
+            elif result == 'O':
+                return 1, 0, 0
+            elif result == '.':
+                return 0, 0, 0
 
-        for i in range(0, self.row):
-            for j in range(0, self.col):
-                if self.game_board[i][j] == ' ':
-                    # On the empty field player 'O' makes a move and calls Min
-                    # That's one branch of the game tree.
-                    self.game_board[i][j] = 'O'
-                    m, _, _ = self.min()
-                    # Fixing the maxv value if needed
-                    if m > maxv:
-                        maxv = m
-                        px = i
-                        py = j
-                    # Setting back the field to empty
-                    self.game_board[i][j] = ' '
-        return maxv, px, py
+            for i in range(0, self.row):
+                for j in range(0, self.col):
+                    if game_board[i][j] == ' ':
+                        # On the empty field player 'O' makes a move and calls Min
+                        # That's one branch of the game tree.
+                        game_board[i][j] = 'O'
+                        m, _, _ = self.minmax(game_board, False)
+                        # Fixing the maxv value if needed
+                        if m > maxv:
+                            maxv = m
+                            px = i
+                            py = j
+                        # Setting back the field to empty
+                        game_board[i][j] = ' '
+            return maxv, px, py
+        else:
 
-    @functools.lru_cache(var)
-    def min(self) -> Tuple[int, int, int]:
-        """
-            Function for the min value calls max recersevly to detrmine the best move for the X player
+            # Player 'X' is min, in this case human
+            # Possible values for minv are:
+            # -1 - win
+            # 0  - a tie
+            # 1  - loss
 
-        Returns:
-            Tuple[int, int, int]: The best move cost, x, y
-        """
+            # We're initially setting it to 2 as worse than the worst case:
+            minv = 2
 
-        # Player 'X' is min, in this case human
-        # Possible values for minv are:
-        # -1 - win
-        # 0  - a tie
-        # 1  - loss
+            qx = None
+            qy = None
 
-        # We're initially setting it to 2 as worse than the worst case:
-        minv = 2
+            result = self.is_end()
 
-        qx = None
-        qy = None
+            if result == 'X':
+                return -1, 0, 0
+            elif result == 'O':
+                return 1, 0, 0
+            elif result == '.':
+                return 0, 0, 0
 
-        result = self.is_end()
+            for i in range(0, self.row):
+                for j in range(0, self.col):
+                    if game_board[i][j] == ' ':
+                        game_board[i][j] = 'X'
+                        m, _, _ = self.minmax(game_board, True)
+                        if m < minv:
+                            minv = m
+                            qx = i
+                            qy = j
+                        game_board[i][j] = ' '
 
-        if result == 'X':
-            return -1, 0, 0
-        elif result == 'O':
-            return 1, 0, 0
-        elif result == '.':
-            return 0, 0, 0
+            return minv, qx, qy
 
-        for i in range(0, self.row):
-            for j in range(0, self.col):
-                if self.game_board[i][j] == ' ':
-                    self.game_board[i][j] = 'X'
-                    m, _, _ = self.max()
-                    if m < minv:
-                        minv = m
-                        qx = i
-                        qy = j
-                    self.game_board[i][j] = ' '
+    @ignore_unhashable
+    @ functools.lru_cache(var)
+    def minmaxalphabeta(self, game_board, isMax, alpha, beta):
 
-        return minv, qx, qy
+        if isMax:
 
-    @functools.lru_cache(var)
-    def max_alpha_beta(self, alpha: int, beta: int) -> Tuple[int, int, int]:
-        """
-            Function for the max value calls min recersevly to detrmine the best move for the O player but with using alphabeta
+            # Player 'O' is max, in this case AI
+            maxv = -2
+            px = None
+            py = None
 
-        Args:
-            alpha (int): The alpha value
-            beta (int): The beta value
+            result = self.is_end()
 
-        Returns:
-            Tuple[int, int, int]: The best move cost, x, y
-        """
+            if result == 'X':
+                return -1, 0, 0
+            elif result == 'O':
+                return 1, 0, 0
+            elif result == '.':
+                return 0, 0, 0
 
-        # Player 'O' is max, in this case AI
-        maxv = -2
-        px = None
-        py = None
+            for i in range(0, self.row):
+                for j in range(0, self.col):
+                    if game_board[i][j] == ' ':
+                        game_board[i][j] = 'O'
+                        m, _, _ = self.minmaxalphabeta(
+                            game_board, False, alpha, beta)
+                        if m > maxv:
+                            maxv = m
+                            px = i
+                            py = j
+                        game_board[i][j] = ' '
 
-        result = self.is_end()
+                        # Next two ifs in Max and Min are the only difference between regular algorithm and minimax
+                        if maxv >= beta:
+                            return maxv, px, py
 
-        if result == 'X':
-            return -1, 0, 0
-        elif result == 'O':
-            return 1, 0, 0
-        elif result == '.':
-            return 0, 0, 0
+                        if maxv > alpha:
+                            alpha = maxv
 
-        for i in range(0, self.row):
-            for j in range(0, self.col):
-                if self.game_board[i][j] == ' ':
-                    self.game_board[i][j] = 'O'
-                    m, _, _ = self.min_alpha_beta(alpha, beta)
-                    if m > maxv:
-                        maxv = m
-                        px = i
-                        py = j
-                    self.game_board[i][j] = ' '
+            return maxv, px, py
+        else:
 
-                    # Next two ifs in Max and Min are the only difference between regular algorithm and minimax
-                    if maxv >= beta:
-                        return maxv, px, py
+            # Player 'X' is min, in this case human
+            minv = 2
 
-                    if maxv > alpha:
-                        alpha = maxv
+            qx = None
+            qy = None
 
-        return maxv, px, py
+            result = self.is_end()
 
-    @functools.lru_cache(var)
-    def min_alpha_beta(self, alpha: int, beta: int) -> Tuple[int, int, int]:
-        """Function for the min value calls max recersevly to detrmine the best move for the X player but with using alphabeta
+            if result == 'X':
+                # print(self.game)
+                # print(-1)
+                return -1, 0, 0
+            elif result == 'O':
+                # print(self.game)
+                # print(1)
+                return 1, 0, 0
+            elif result == '.':
+                # print(self.game)
+                # print(0)
+                return 0, 0, 0
 
-        Args:
-            alpha (int): The alpha value
-            beta (int): The beta value
+            for i in range(0, self.row):
+                for j in range(0, self.col):
+                    if game_board[i][j] == ' ':
+                        game_board[i][j] = 'X'
+                        m, _, _ = self.minmaxalphabeta(
+                            game_board, True, alpha, beta)
+                        if m < minv:
+                            minv = m
+                            qx = i
+                            qy = j
+                        game_board[i][j] = ' '
 
-        Returns:
-            Tuple[int, int, int]: The best move cost, x, y
-        """
+                        if minv <= alpha:
+                            return minv, qx, qy
 
-        # Player 'X' is min, in this case human
-        minv = 2
+                        if minv < beta:
+                            beta = minv
 
-        qx = None
-        qy = None
-
-        result = self.is_end()
-
-        if result == 'X':
-            # print(self.game)
-            # print(-1)
-            return -1, 0, 0
-        elif result == 'O':
-            # print(self.game)
-            # print(1)
-            return 1, 0, 0
-        elif result == '.':
-            # print(self.game)
-            # print(0)
-            return 0, 0, 0
-
-        for i in range(0, self.row):
-            for j in range(0, self.col):
-                if self.game_board[i][j] == ' ':
-                    self.game_board[i][j] = 'X'
-                    m, _, _ = self.max_alpha_beta(alpha, beta)
-                    if m < minv:
-                        minv = m
-                        qx = i
-                        qy = j
-                    self.game_board[i][j] = ' '
-
-                    if minv <= alpha:
-                        return minv, qx, qy
-
-                    if minv < beta:
-                        beta = minv
-
-        return minv, qx, qy
+            return minv, qx, qy
 
     def best_move(self, player: str) -> Tuple[int, int]:
         """
@@ -269,28 +264,35 @@ class MinMaxAI:
         Returns:
             Tuple[int, int]: The best move for the player (x, y)
         """
+        # self.game_board = tuple([tuple(self.game.tic_board[0]),
+        #                         tuple(self.game.tic_board[1]),
+        #                         tuple(self.game.tic_board[2])])
         # If it's player's turn
         if player == 'X':
             start = time.time()
             if self.alphabeta:
-                _, qx, qy = self.min_alpha_beta(-2, 2)
+                _, qx, qy = self.minmaxalphabeta(self.game_board, False, -2, 2)
             else:
-                _, qx, qy = self.min()
+                _, qx, qy = self.minmax(self.game_board, False)
             end = time.time()
-            print(self.game)
+            # print(self.game)
+            self.time_list.append(end - start)
             print('Evaluation time: {}s'.format(round(end - start, 7)))
             print('Playing move: X = {}, Y = {}'.format(qx, qy))
+            print(sum(self.time_list))
 
             return qx, qy
         # If it's AI's turn
         else:
             start = time.time()
             if self.alphabeta:
-                _, qx, qy = self.max_alpha_beta(-2, 2)
+                _, qx, qy = self.minmaxalphabeta(self.game_board, True, -2, 2)
             else:
-                _, qx, qy = self.max()
+                _, qx, qy = self.minmax(tuple(self.game_board), True)
             end = time.time()
-            print(self.game)
+            # print(self.game)
+            self.time_list.append(end - start)
             print('Evaluation time: {}s'.format(round(end - start, 7)))
             print('Recommended move: X = {}, Y = {}'.format(qx, qy))
+            print(sum(self.time_list))
             return qx, qy

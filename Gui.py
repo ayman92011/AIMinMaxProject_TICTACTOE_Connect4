@@ -194,10 +194,12 @@ class DrawGameConnect4:
         """
         for i in range(len(game_board)):
             for j in range(len(game_board[0])):
-                img = self.font.render(
-                    game_board[i][j], True, pygame.Color("White"))
-                self.screen.blit(
-                    img, tuple(map(add, self.rectlist[i * 7 + j].topleft, (25, -25))))
+                if game_board[i][j] == "X":
+                    pygame.draw.circle(
+                        self.screen, (255, 0, 0), self.rectlist[i * 7 + j].center, 30)
+                elif game_board[i][j] == "O":
+                    pygame.draw.circle(
+                        self.screen, (255, 255, 0), self.rectlist[i * 7 + j].center, 30)
 
 
 class Button:
@@ -324,13 +326,15 @@ class MainScene:
         self.scene = pygame.display.set_mode([600, 600])
         pygame.display.set_caption("Home")
         self.AIvsoneButton = Button(self.scene, "Start Single Player Mode player Starts",
-                                    (10, 50), 20, "Black")
+                                    (10, 50), 25, "Black")
         self.onevsAIButton = Button(self.scene, "Start Single Player Mode AI starts",
-                                    (10, 100), 20, "Black")
+                                    (10, 100), 25, "Black")
         self.MultiButton = Button(self.scene, "Start Multi player Mode",
-                                  (10, 150), 20, "Black")
+                                  (10, 150), 25, "Black")
         self.AIvsAIButton = Button(self.scene, "Start AI Mode",
-                                   (10, 200), 20, "Black")
+                                   (10, 200), 25, "Black")
+        self.connect4Button = Button(
+            self.scene, "Start Connect 4", (10, 250), 25, "Black")
         self.scene.fill(pygame.Color("Black"))
 
     def show(self) -> None:
@@ -341,6 +345,7 @@ class MainScene:
         self.AIvsoneButton.show()
         self.MultiButton.show()
         self.AIvsAIButton.show()
+        self.connect4Button.show()
         pygame.display.flip()
 
     def handle_event(self, event: Event) -> int:
@@ -361,6 +366,8 @@ class MainScene:
             return 3
         if self.AIvsAIButton.isClicked(event):
             return 4
+        if self.connect4Button.isClicked(event):
+            return 5
         return None
 
 
@@ -415,10 +422,10 @@ class TicGameScene:
             return 0
         if self.aiall and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_p:
-                if self.game.movesLeft() == 9:
-                    x_rand = randint(0, 2)
-                    y_rand = randint(0, 2)
-                    self.game.run(x_rand, y_rand)
+                # if self.game.movesLeft() == 9:
+                #     x_rand = randint(0, 2)
+                #     y_rand = randint(0, 2)
+                #     self.game.run(x_rand, y_rand)
                 self.game.run()
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
@@ -461,7 +468,11 @@ class Connect4GameScene:
         self.aiButton.show()
         self.gui.update(self.game.game_board)
         if self.game.isWin():
-            self.statusButton.change_text(text=self.game.win(), bgcolor="Blue")
+            if self.game.win() == "X wins":
+                self.statusButton.change_text(text="Red Wins", bgcolor="Blue")
+            elif self.game.win() == "O wins":
+                self.statusButton.change_text(
+                    text="Yellow Wins", bgcolor="Blue")
             self.statusButton.show()
         else:
             self.timer.update()
@@ -487,10 +498,10 @@ class Connect4GameScene:
             self.play_ai = True
         if self.aiall and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_p:
-                if self.game.movesLeft() == 9:
-                    x_rand = randint(0, 2)
-                    y_rand = randint(0, 2)
-                    self.game.run(x_rand, y_rand)
+                # if self.game.movesLeft() == 9:
+                #     x_rand = randint(0, 2)
+                #     y_rand = randint(0, 2)
+                #     self.game.run(x_rand, y_rand)
                 self.game.run()
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
