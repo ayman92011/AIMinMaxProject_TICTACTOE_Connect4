@@ -1,3 +1,4 @@
+from pygame._sdl2.video import Window
 # For Type checking
 from typing import Union
 # The GUI classes
@@ -10,6 +11,8 @@ pygame.init()
 # Set up the drawing window
 sceneOb: Union[MainScene, TicGameScene] = MainScene()
 scene = sceneOb.scene
+window = Window.from_display_module()
+window.position = (512, 25)
 
 
 if __name__ == "__main__":
@@ -30,17 +33,21 @@ if __name__ == "__main__":
         if mode_select is not None:
             if mode_select == 0:
                 scene.fill((0, 0, 0))
-                sceneOb = TicGameScene()
+                sceneOb = MainScene()
                 mode_select = None
-            elif mode_select == 1:
+            if mode_select == 1:
                 scene.fill((0, 0, 0))
-                sceneOb = TicGameScene(ai_goes_first=True)
+                sceneOb = TicGameScene()
                 mode_select = None
             elif mode_select == 2:
                 scene.fill((0, 0, 0))
-                sceneOb = TicGameScene(ai=False)
+                sceneOb = TicGameScene(ai_goes_first=True)
                 mode_select = None
             elif mode_select == 3:
+                scene.fill((0, 0, 0))
+                sceneOb = TicGameScene(ai=False)
+                mode_select = None
+            elif mode_select == 4:
                 scene.fill((0, 0, 0))
                 sceneOb = TicGameScene(aiall=True)
                 mode_select = None

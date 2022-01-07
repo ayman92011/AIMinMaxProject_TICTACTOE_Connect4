@@ -66,6 +66,15 @@ class Run_Game:
         else:
             return False
 
+    def win(self) -> str:
+        """
+            Function for when the player wins
+
+        Returns:
+            str: player X wins or player O wins
+        """
+        return self.__game.win()
+
     def movesLeft(self) -> int:
         """
             Fuction to know the number of moves left in the game

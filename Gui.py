@@ -4,6 +4,7 @@ from operator import add
 from pygame.event import Event
 from rungame import Run_Game
 from random import randint
+import time
 
 
 class DrawGameTic:
@@ -103,7 +104,7 @@ class Button:
                  text: str,
                  pos: Tuple[int],
                  font_size: int,
-                 bgcolor: str = "black",
+                 bgcolor: str = "Black",
                  textcolor: str = "White") -> None:
         """
             Class to create a Button in pygame
@@ -125,31 +126,42 @@ class Button:
         else:
             self.screen: pygame.Surface = pygame.display.set_mode([600, 600])
 
-        self.__change_text(text, bgcolor, textcolor)
+        self.text = text
+        self.change_text(bgcolor, textcolor)
+        self.hidden = False
+        self.flag = True
 
-    def __change_text(self, text: str,
-                      bgcolor: str = "black",
-                      textcolor: str = "White") -> None:
+    def change_text(self, bgcolor: str = "Black",
+                    textcolor: str = "White",
+                    text: str = "") -> None:
         """
             Function to change the text of the button
 
         Args:
-            text (str): The text to change to.
             bgcolor (str, optional): The background color of the button. Defaults to "black".
             textcolor (str, optional): The color of the text. Defaults to "White".
+            text (str, optional): The text to change to. Defaults to the text passed in the class constructor
         """
-        self.text = self.font.render(text, 1, pygame.Color(textcolor))
-        self.size = self.text.get_size()
+        if text == "":
+            textr = self.font.render(self.text, 1, pygame.Color(textcolor))
+        else:
+            textr = self.font.render(text, 1, pygame.Color(textcolor))
+        self.size = textr.get_size()
         self.surface = pygame.Surface(self.size)
         self.surface.fill(bgcolor)
-        self.surface.blit(self.text, (0, 0))
+        self.surface.blit(textr, (0, 0))
         self.rect = pygame.Rect(self.x, self.y, self.size[0], self.size[1])
 
     def show(self) -> None:
         """
             Draw the button on the screen
         """
-        self.screen.blit(self.surface, (self.x, self.y))
+        if not self.hidden:
+            self.screen.blit(self.surface, (self.x, self.y))
+        elif self.flag:
+            self.surface.fill((0, 0, 0))
+            self.screen.blit(self.surface, (self.x, self.y))
+            self.flag = not self.flag
 
     def isClicked(self, event: Event) -> bool:
         """
@@ -165,9 +177,42 @@ class Button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 if self.rect.collidepoint(x, y):
-                    # self.change_text(self., bg="red")
                     return True
         return False
+
+    def isHover(self) -> bool:
+        """
+            Function to know if you hover over the button
+
+        Returns:
+            bool: True if hover else False
+        """
+        x, y = pygame.mouse.get_pos()
+        if self.rect.collidepoint(x, y):
+            return True
+        return False
+
+
+class Timer(Button):
+    def __init__(self,
+                 screen: pygame.Surface,
+                 pos: Tuple[int],
+                 font_size: int,
+                 bgcolor: str = "Black",
+                 textcolor: str = "White") -> None:
+
+        self.time_start = time.time()
+        super().__init__(screen, self.__str__(), pos,
+                         font_size, bgcolor=bgcolor, textcolor=textcolor)
+
+    def __str__(self) -> str:
+        time_in_sec = time.time() - self.time_start
+        if int(time_in_sec % 60) <= 9:
+            return f"{int(time_in_sec/60)}:0{int(time_in_sec%60)}"
+        return f"{int(time_in_sec/60)}:{int(time_in_sec%60)}"
+
+    def update(self):
+        super().change_text(text=self.__str__())
 
 
 class MainScene:
@@ -176,6 +221,7 @@ class MainScene:
             Class for the home screen of the GUI
         """
         self.scene = pygame.display.set_mode([600, 600])
+        pygame.display.set_caption("Home")
         self.AIvsoneButton = Button(self.scene, "Start Single Player Mode player Starts",
                                     (10, 50), 20, "Black")
         self.onevsAIButton = Button(self.scene, "Start Single Player Mode AI starts",
@@ -207,13 +253,13 @@ class MainScene:
             int: The number of button that was pressed and None if nothing is pressed.
         """
         if self.AIvsoneButton.isClicked(event):
-            return 0
-        if self.onevsAIButton.isClicked(event):
             return 1
-        if self.MultiButton.isClicked(event):
+        if self.onevsAIButton.isClicked(event):
             return 2
-        if self.AIvsAIButton.isClicked(event):
+        if self.MultiButton.isClicked(event):
             return 3
+        if self.AIvsAIButton.isClicked(event):
+            return 4
         return None
 
 
@@ -227,17 +273,28 @@ class TicGameScene:
             ai_goes_first (bool, optional): Flag to know if you want the AI to go first. Defaults to False.
             aiall (bool, optional): Flag to know if you want AI vs AI mode. Defaults to False.
         """
-        self.scene = pygame.display.set_mode([600, 600])
-        self.gui = DrawGameTic(self.scene, border=True)
+        self.scene = pygame.display.set_mode([600, 700])
+        pygame.display.set_caption("TicTacToe")
+        self.homeButton = Button(self.scene, "Home", (20, 20), 50, "Blue")
+        self.gui = DrawGameTic(self.scene, border=True, start_y=100)
         self.ai = ai
         self.aiall = aiall
         self.game = Run_Game(start=ai_goes_first)
+        self.timer = Timer(self.scene, (450, 20), 50)
+        self.statusButton = Button(self.scene, "", (205, 350), 100)
 
     def show(self) -> None:
         """
             Function to update the game screen in the GUI
         """
+        self.homeButton.show()
         self.gui.update(self.game.game_board)
+        if self.game.isWin():
+            self.statusButton.change_text(text=self.game.win(), bgcolor="Blue")
+            self.statusButton.show()
+        else:
+            self.timer.update()
+        self.timer.show()
         pygame.display.flip()
 
     def handle_event(self, event: Event) -> None:
@@ -247,6 +304,14 @@ class TicGameScene:
         Args:
             event (Event): pygame event
         """
+        if self.homeButton.isHover():
+            self.homeButton.change_text(bgcolor="Red")
+        else:
+            self.homeButton.change_text(bgcolor="Blue")
+        if self.statusButton.isClicked(event):
+            self.statusButton.hidden = True
+        if self.homeButton.isClicked(event):
+            return 0
         if self.aiall and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_p:
                 if self.game.movesLeft() == 9:

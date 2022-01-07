@@ -60,7 +60,7 @@ class TicTacToe:
             Function for when the player wins
 
         Returns:
-            str: player 1 wins or player 2 wins
+            str: player X wins or player O wins
         """
         check_x = ["X", "X", "X"]
         check_o = ["O", "O", "O"]
