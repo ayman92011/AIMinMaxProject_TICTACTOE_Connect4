@@ -1,6 +1,10 @@
+# To know how much time pass in each search for the best move
 import time
+# For Type checking
 from typing import Tuple, Union
+# The Connect4 Logic class
 from Connect4Logic import Connect4
+# The TicTacToe Logic class
 from TicTacToeLogic import TicTacToe
 
 

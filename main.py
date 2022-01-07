@@ -1,4 +1,6 @@
+# For Type checking
 from typing import Union
+# The GUI classes
 from Gui import MainScene, TicGameScene
 
 # Import and initialize the pygame library
@@ -23,13 +25,25 @@ if __name__ == "__main__":
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
-        sceneOb.update()
         sceneOb.show()
 
         if mode_select is not None:
-            scene.fill((0, 0, 0))
-            sceneOb = TicGameScene()
-            mode_select = None
+            if mode_select == 0:
+                scene.fill((0, 0, 0))
+                sceneOb = TicGameScene()
+                mode_select = None
+            elif mode_select == 1:
+                scene.fill((0, 0, 0))
+                sceneOb = TicGameScene(ai_goes_first=True)
+                mode_select = None
+            elif mode_select == 2:
+                scene.fill((0, 0, 0))
+                sceneOb = TicGameScene(ai=False)
+                mode_select = None
+            elif mode_select == 3:
+                scene.fill((0, 0, 0))
+                sceneOb = TicGameScene(aiall=True)
+                mode_select = None
 
     # Done! Time to quit.
     pygame.quit()

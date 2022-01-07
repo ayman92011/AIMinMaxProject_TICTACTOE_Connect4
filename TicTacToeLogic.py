@@ -8,28 +8,25 @@ class TicTacToe:
                           [" ", " ", " "]]
         self.turn = True
 
-    def play(self, x: int, y: int) -> list:
-        """ 
-            playes one move for each player
+    def play(self, x: int, y: int) -> bool:
+        """
+            Playes one move for each player
 
         Args:
             x (int): x coords for place to play
             y (int): y coords for place to play
 
-        Raises:
-            Exception: place entered twice
-
         Returns:
-            list: playing board
+            bool: True if you can play the move else False
         """
         if self.tic_board[x][y] != " ":
-            return self.tic_board
+            return False
         if self.turn:
             self.tic_board[x][y] = "X"
         else:
             self.tic_board[x][y] = "O"
         self.turn = not self.turn
-        return self.tic_board
+        return True
 
     def isMovesLeft(self) -> bool:
         """
@@ -43,6 +40,20 @@ class TicTacToe:
                 if (self.tic_board[i][j] == " "):
                     return True
         return False
+
+    def movesLeft(self) -> int:
+        """
+            Gets the number of moves left
+
+        Returns:
+            int: The number of empty cells
+        """
+        sum = 0
+        for i in range(len(self.tic_board)):
+            for j in range(len(self.tic_board[0])):
+                if (self.tic_board[i][j] == " "):
+                    sum += 1
+        return sum
 
     def win(self) -> str:
         """
@@ -80,9 +91,17 @@ class TicTacToe:
         return ""
 
     def __str__(self) -> str:
+        """ToString method to print the class
+
+        Returns:
+            str: board in format ['', '', '']
+                                 ['', '', '']
+                                 ['', '', '']
+        """
         return f"{self.tic_board[0]}\n{self.tic_board[1]}\n{self.tic_board[2]}"
 
 
+# Testing the TicTacToe class for bugs
 if __name__ == "__main__":
     game = TicTacToe()
     game.tic_board = [
